@@ -155,12 +155,16 @@
             display: flex;
             gap: 40px;
             flex-wrap: wrap;
+            justify-content: left;
         }
 
         .result-card {
             width: 350px;
             cursor: pointer;
             transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centers the title under the image */
         }
 
         .result-card:hover {
@@ -187,6 +191,7 @@
             display: flex;
             gap: 80px;
             margin-top: 0px;
+            align-items: flex-start;
         }
 
         .detail-column {
@@ -207,7 +212,7 @@
         }
 
         .prompt-text {
-            font-size: 18px;
+            font-size: 15px;
             line-height: 1.5;
             margin-bottom: 50px;
         }
@@ -307,7 +312,7 @@
             <input type="text" id="search-input" class="search-bar" placeholder="SEARCH PROMPT (e.g., watercolor, relighting)" autocomplete="off">
             <div id="suggestions" class="suggestions-box"></div>
         </div>
-        <div class="hint">Available tags: Watercolor, Relighting, Projects, Animation</div>
+        <div class="hint">Available tags: watercolor, relighting, projects, animation</div>
     </div>
 
     <div id="results-page" class="page">
@@ -382,7 +387,7 @@
 
             <div class="form-group" id="group-step2" style="display: none;">
                 <div class="form-label">STEP 2</div>
-                <textarea class="form-input" id="input-step2" placeholder="Transform sketch style to realistic..."></textarea>
+                <textarea class="form-input" id="input-step2" placeholder="Transform sketch style to projects..."></textarea>
             </div>
 
             <div class="form-group" id="group-tools" style="display: none;">
@@ -407,19 +412,13 @@
                 {
                     title: "DETAILED WATERCOLOR SKETCH",
                     thumbnail: "IMAGE/WATERCOLOR/DETAILED WATERCLOR/d thumb.png",
-                    images: [
-                        "IMAGE/WATERCOLOR/DETAILED WATERCLOR/D1.png",
-                        "IMAGE/WATERCOLOR/DETAILED WATERCLOR/D2.png"
-                    ],
+                    images: ["IMAGE/WATERCOLOR/DETAILED WATERCLOR/D1.png", "IMAGE/WATERCOLOR/DETAILED WATERCLOR/D2.png"],
                     prompt: "Transform this image to a detailed and sharp hand sketch. Low opacity watercolor. Keep the camera and everything aligned."
                 },
                 {
                     title: "BLACK AND WHITE",
                     thumbnail: "IMAGE/WATERCOLOR/BLACK&WHITE/BW thumb.png",
-                    images: [
-                        "IMAGE/WATERCOLOR/BLACK&WHITE/BW1.png",
-                        "IMAGE/WATERCOLOR/BLACK&WHITE/BW2.png",
-                    ],
+                    images: ["IMAGE/WATERCOLOR/BLACK&WHITE/BW1.png", "IMAGE/WATERCOLOR/BLACK&WHITE/BW2.png"],
                     prompt: `
                         <p>Transform the input image into a grayscale storyboard animatic frame with loose pencil/graphite sketch linework: thin, slightly imperfect strokes, subtle construction lines, light smudging, and minimal shading (simple value blocks only).</p>
                         <p>Preserve the original composition exactly (same camera angle, framing, perspective, subject positions, proportions, and depth) — no redesign, no added objects, no removal. Simplify materials and textures into readable shapes; prioritize clear silhouettes and strong facial/gesture readability if characters exist.</p>
@@ -427,15 +426,11 @@
                     `
                 }
             ],
-           "relighting": [
+            "relighting": [
                 {
                     title: "NIGHT TO DAY",
                     thumbnail: "IMAGE/RELLIGHTING/NIGHTTODAY/NTD THUMNAIL.png",
-                    images: [
-                        "IMAGE/RELLIGHTING/NIGHTTODAY/N1.png",
-                        "IMAGE/RELLIGHTING/NIGHTTODAY/N1 SK.png",
-                        "IMAGE/RELLIGHTING/NIGHTTODAY/ND1.png"
-                    ],
+                    images: ["IMAGE/RELLIGHTING/NIGHTTODAY/N1.png", "IMAGE/RELLIGHTING/NIGHTTODAY/N1 SK.png", "IMAGE/RELLIGHTING/NIGHTTODAY/ND1.png"],
                     prompt: `
                         <strong>STEP 1 - TRANSFORM THE IMAGE TO SKETCH</strong>
                         <p>Transform this image to a detailed and sharp hand sketch. Low opacity water color. Keep the camera and everything aligned.</p>
@@ -444,14 +439,18 @@
                     `
                 }
             ],
-            "projects": [
+           "projects": [
                 {
-                    title: "MINIMALIST PHOTOREAL",
-                    thumbnail: "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/REALISTIC/MINIMALIST/THUMBNAIL_REAL.png",
-                    images: [
-                        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=600&q=80"
-                    ],
-                    prompt: "Render this minimalist Japanese-Scandinavian design in a hyper-realistic photographic style. High resolution, 8k, photorealistic textures, soft diffuse natural lighting."
+                    title: "2026 Greeting Posts Papercraft", // <--- Changed the title slightly
+                    thumbnail: "IMAGE/PROJECTS/GREETING POST/G THUMB.png",
+                    images: ["IMAGE/PROJECTS/GREETING POST/G1.png", "IMAGE/PROJECTS/GREETING POST/G2.png"],
+                    prompt: `
+                        <p>Create a photorealistic papercraft model of the provided building, rendered as a centered frontal elevation composed entirely from white paper with layered die-cut elements, delicate embossing, and precise, crisp edges. Maintain generous negative space and a clean high-key background.</p>
+                        
+                        <p>Illuminate the interior windows with warm amber light so the model appears to glow from within, and place subtle paper-cut contextual elements (for example palm silhouettes or building-appropriate foliage) at the sides. Emphasize layered depth—foreground entrance canopy, mid-level balconies, recessed windows—showing clear separation between planes and soft tactile paper texture.</p>
+                        
+                        <p>Use soft directional top/side lighting to create gentle natural shadows and a slight drop-shadow behind the structure; keep the composition symmetrical, slightly low-angle frontal, with shallow depth of field and high-resolution fine detail. Render with a calm, elegant, minimally whimsical atmosphere suitable for close-up inspection.</p>
+                    `
                 }
             ],
            "animation": [
@@ -488,29 +487,23 @@
             ]
         };
 
-        // --- NEW: HIGH CAPACITY INDEXED-DB SYSTEM ---
         let dbInstance;
         let database = {};
 
         function initIndexedDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open("PromptArchiveDB", 1);
-                
                 request.onupgradeneeded = function(event) {
                     dbInstance = event.target.result;
                     if (!dbInstance.objectStoreNames.contains("storage")) {
                         dbInstance.createObjectStore("storage");
                     }
                 };
-
                 request.onsuccess = function(event) {
                     dbInstance = event.target.result;
                     resolve();
                 };
-
-                request.onerror = function(event) {
-                    reject(event);
-                };
+                request.onerror = (e) => reject(e);
             });
         }
 
@@ -519,13 +512,8 @@
                 const transaction = dbInstance.transaction(["storage"], "readonly");
                 const store = transaction.objectStore("storage");
                 const request = store.get("full_db");
-
-                request.onsuccess = function(event) {
-                    resolve(event.target.result);
-                };
-                request.onerror = function(event) {
-                    reject(event);
-                };
+                request.onsuccess = (event) => resolve(event.target.result);
+                request.onerror = (e) => reject(e);
             });
         }
 
@@ -534,35 +522,59 @@
                 const transaction = dbInstance.transaction(["storage"], "readwrite");
                 const store = transaction.objectStore("storage");
                 const request = store.put(database, "full_db");
-
                 request.onsuccess = () => resolve();
                 request.onerror = (e) => reject(e);
             });
         }
 
-        // Initialize the app immediately on page load
+        // AUTO-SYNC LOGIC: Merges code changes with browser memory automatically
+  // AUTO-SYNC LOGIC: Forces browser memory to update whenever you change the code
         window.onload = async function() {
             try {
                 await initIndexedDB();
-                const storedData = await loadDatabase();
+                let storedData = await loadDatabase();
                 
-                if (storedData) {
-                    database = storedData;
+                if (!storedData) {
+                    // First time load: use code as truth
+                    database = JSON.parse(JSON.stringify(defaultDatabase));
                 } else {
-                    database = defaultDatabase;
-                    await saveDatabase();
+                    database = storedData;
+                    
+                    // Loop through every tag in your hardcoded defaultDatabase
+                    for (let tag in defaultDatabase) {
+                        if (!database[tag]) {
+                            // If a whole new tag was added to code, add it to memory
+                            database[tag] = defaultDatabase[tag];
+                        } else {
+                            defaultDatabase[tag].forEach(codeItem => {
+                                // Find if this specific title already exists in memory
+                                const existingIndex = database[tag].findIndex(memItem => memItem.title === codeItem.title);
+                                
+                                if (existingIndex === -1) {
+                                    // 1. NEW ITEM: If title isn't in memory, add it
+                                    database[tag].push(codeItem);
+                                } else {
+                                    // 2. EXISTING ITEM: Overwrite memory with the latest code 
+                                    // This updates prompts, images, and paths automatically!
+                                    database[tag][existingIndex] = codeItem;
+                                }
+                            });
+                        }
+                    }
                 }
+                // Save the synchronized data back to the browser memory
+                await saveDatabase();
             } catch (err) {
-                console.error("Failed to load IndexedDB. Falling back to default database.", err);
+                console.error("Storage synchronization error:", err);
                 database = defaultDatabase;
             }
         };
 
         const availableTags = Object.keys(defaultDatabase);
-
         let currentViewedTag = "";
         let currentViewedIndex = -1;
 
+        // --- UI Logic (Search, Navigation, Submit) ---
         const searchInput = document.getElementById('search-input');
         const suggestionsBox = document.getElementById('suggestions');
         const homePage = document.getElementById('home-page');
@@ -573,50 +585,31 @@
         searchInput.addEventListener('input', function() {
             const query = this.value.toLowerCase().trim();
             suggestionsBox.innerHTML = ''; 
-
-            if (query === '') {
-                suggestionsBox.style.display = 'none';
-                return;
-            }
-
+            if (query === '') { suggestionsBox.style.display = 'none'; return; }
             const matches = availableTags.filter(tag => tag.includes(query));
-
             if (matches.length > 0) {
                 matches.forEach(match => {
                     const div = document.createElement('div');
                     div.className = 'suggestion-item';
                     div.innerText = match;
-                    
                     div.onclick = function() {
                         searchInput.value = match;
                         suggestionsBox.style.display = 'none';
                         loadResults(match);
                     };
-                    
                     suggestionsBox.appendChild(div);
                 });
                 suggestionsBox.style.display = 'block';
-            } else {
-                suggestionsBox.style.display = 'none';
-            }
+            } else { suggestionsBox.style.display = 'none'; }
         });
 
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.search-container')) {
-                suggestionsBox.style.display = 'none';
-            }
-        });
+        document.addEventListener('click', (e) => { if (!e.target.closest('.search-container')) suggestionsBox.style.display = 'none'; });
 
         searchInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 const query = searchInput.value.toLowerCase().trim();
-                
-                if (database[query] || defaultDatabase[query]) {
-                    suggestionsBox.style.display = 'none';
-                    loadResults(query);
-                } else {
-                    alert('Tag not found! Try: watercolor, relighting, projects, or animation');
-                }
+                if (database[query]) { suggestionsBox.style.display = 'none'; loadResults(query); }
+                else { alert('Tag not found!'); }
             }
         });
 
@@ -624,25 +617,15 @@
             document.getElementById('results-header').innerText = "TAG - " + tag.toUpperCase();
             const grid = document.getElementById('results-grid');
             grid.innerHTML = "";
-
-            if(database[tag] && database[tag].length > 0) {
+            if(database[tag]) {
                 database[tag].forEach((item, index) => {
                     const card = document.createElement('div');
                     card.className = 'result-card';
                     card.onclick = () => loadDetail(tag, index);
-
-                    const thumbImage = item.thumbnail ? item.thumbnail : item.images[0];
-
-                    card.innerHTML = `
-                        <img src="${thumbImage}" class="result-image-placeholder" alt="${item.title}">
-                        <div class="result-title">${item.title}</div>
-                    `;
+                    card.innerHTML = `<img src="${item.thumbnail}" class="result-image-placeholder"><div class="result-title">${item.title}</div>`;
                     grid.appendChild(card);
                 });
-            } else {
-                grid.innerHTML = "<p>No prompts found for this tag.</p>";
             }
-
             hideAllPages();
             resultsPage.classList.add('active-page');
         }
@@ -650,140 +633,72 @@
         function loadDetail(tag, itemIndex) {
             currentViewedTag = tag;
             currentViewedIndex = itemIndex;
-
             const data = database[tag][itemIndex];
             document.getElementById('detail-header').innerText = "TAG - " + tag.toUpperCase();
             document.getElementById('detail-prompt').innerHTML = data.prompt;
-
-            const extraInfoBox = document.getElementById('detail-extra-info');
-            const rowTools = document.getElementById('row-tools');
-            const rowDuration = document.getElementById('row-duration');
-
+            const extra = document.getElementById('detail-extra-info');
             if (data.tools || data.duration) {
-                extraInfoBox.style.display = 'block';
-
-                if (data.tools) {
-                    rowTools.style.display = 'flex';
-                    document.getElementById('detail-tools').innerText = data.tools;
-                } else {
-                    rowTools.style.display = 'none';
-                }
-
-                if (data.duration) {
-                    rowDuration.style.display = 'flex';
-                    document.getElementById('detail-duration').innerText = data.duration;
-                } else {
-                    rowDuration.style.display = 'none';
-                }
-            } else {
-                extraInfoBox.style.display = 'none';
-            }
-
+                extra.style.display = 'block';
+                document.getElementById('detail-tools').innerText = data.tools || "";
+                document.getElementById('detail-duration').innerText = data.duration || "";
+            } else { extra.style.display = 'none'; }
             const imgContainer = document.getElementById('detail-images');
             imgContainer.innerHTML = "";
-            data.images.forEach(imgSrc => {
+            data.images.forEach(src => {
                 const img = document.createElement('img');
-                img.src = imgSrc;
+                img.src = src;
                 img.className = 'example-img';
                 imgContainer.appendChild(img);
             });
-
             hideAllPages();
             detailPage.classList.add('active-page');
         }
 
-        function goHome() {
-            searchInput.value = '';
-            suggestionsBox.style.display = 'none';
-            hideAllPages();
-            homePage.classList.add('active-page');
-        }
+        function goHome() { hideAllPages(); homePage.classList.add('active-page'); }
+        function goResults() { hideAllPages(); resultsPage.classList.add('active-page'); }
+        function goToSubmit() { hideAllPages(); submitPage.classList.add('active-page'); toggleFormFields(); }
+        function hideAllPages() { [homePage, resultsPage, detailPage, submitPage].forEach(p => p.classList.remove('active-page')); }
 
-        function goResults() {
-            hideAllPages();
-            if(currentViewedTag !== "" && database[currentViewedTag] && database[currentViewedTag].length > 0) {
-                loadResults(currentViewedTag);
-            } else {
-                goHome(); 
-            }
-        }
-
-        function goToSubmit() {
-            hideAllPages();
-            submitPage.classList.add('active-page');
-            toggleFormFields(); 
-        }
-
-        function hideAllPages() {
-            homePage.classList.remove('active-page');
-            resultsPage.classList.remove('active-page');
-            detailPage.classList.remove('active-page');
-            submitPage.classList.remove('active-page');
-        }
-
-    // --- PASSWORD PROTECTED DELETE FUNCTION ---
         async function deletePrompt() {
-            // Ask for the password
-            const enteredPassword = prompt("Enter Admin Password to delete this prompt:");
-            
-            // Define your secret password right here!
-            const secretPassword = "admin";
-
-            // If they hit "Cancel" on the prompt box, do nothing
-            if (enteredPassword === null) {
-                return; 
-            }
-
-            // Check if the password matches
-            if (enteredPassword === secretPassword) {
-                
-                if(confirm("Password accepted! Are you sure you want to delete this?")) {
-                    // Remove from database
+            const pass = prompt("Enter Password:");
+            if (pass === "admin") {
+                if(confirm("Permanently delete?")) {
+                    // 1. Remove the item from the array
                     database[currentViewedTag].splice(currentViewedIndex, 1);
                     
-                    // Save the change
-                    await saveDatabase(); 
+                    // 2. Save the updated database to browser memory
+                    await saveDatabase();
                     
-                    alert("Prompt deleted!");
-                    if (database[currentViewedTag] && database[currentViewedTag].length > 0) {
-                        goResults(); 
+                    alert("Deleted!");
+                    
+                    // 3. SHIFT LOGIC: Check if the tag still has items
+                    if (database[currentViewedTag].length > 0) {
+                        // Re-load the results grid so the next item moves into the old spot
+                        loadResults(currentViewedTag);
                     } else {
+                        // If no items left, go back to the home page
                         goHome();
                     }
                 }
-            } else {
-                // If they type the wrong password
-                alert("Incorrect password. Deletion canceled.");
+            } else { 
+                alert("Wrong password"); 
             }
         }
 
         function toggleFormFields() {
-            const selectedTag = document.getElementById('input-tag').value;
-            
-            document.getElementById('group-prompt').style.display = 'flex';
-            document.getElementById('group-step1').style.display = 'none';
-            document.getElementById('group-step2').style.display = 'none';
-            document.getElementById('group-tools').style.display = 'none';
-            document.getElementById('group-duration').style.display = 'none';
-
-            if (selectedTag === 'relighting') {
-                document.getElementById('group-prompt').style.display = 'none';
-                document.getElementById('group-step1').style.display = 'flex';
-                document.getElementById('group-step2').style.display = 'flex';
-            } else if (selectedTag === 'animation') {
-                document.getElementById('group-tools').style.display = 'flex';
-                document.getElementById('group-duration').style.display = 'flex';
-            }
+            const tag = document.getElementById('input-tag').value;
+            document.getElementById('group-prompt').style.display = (tag === 'relighting') ? 'none' : 'flex';
+            document.getElementById('group-step1').style.display = (tag === 'relighting') ? 'flex' : 'none';
+            document.getElementById('group-step2').style.display = (tag === 'relighting') ? 'flex' : 'none';
+            document.getElementById('group-tools').style.display = (tag === 'animation') ? 'flex' : 'none';
+            document.getElementById('group-duration').style.display = (tag === 'animation') ? 'flex' : 'none';
         }
 
-        // --- UPDATED ASYNC SUBMIT FUNCTION ---
         async function handleFormSubmit(event) {
-            event.preventDefault(); 
-            
+            event.preventDefault();
             const tag = document.getElementById('input-tag').value;
             const title = document.getElementById('input-title').value;
             const files = document.getElementById('input-image').files;
-
             let newImages = [];
             for (let file of files) {
                 const dataUrl = await new Promise(resolve => {
@@ -793,48 +708,17 @@
                 });
                 newImages.push(dataUrl);
             }
-
-            let promptHTML = "";
-            let toolsText = "";
-            let durationText = "";
-
-            if (tag === 'relighting') {
-                const step1 = document.getElementById('input-step1').value;
-                const step2 = document.getElementById('input-step2').value;
-                promptHTML = `<strong>STEP 1 - TRANSFORM THE IMAGE TO SKETCH</strong><p>${step1}</p><strong>STEP 2 - TRANSFORM SKETCH STYE TO RELISTIC</strong><p>${step2}</p>`;
-            } else {
-                promptHTML = document.getElementById('input-prompt').value;
-            }
-
+            let promptHTML = (tag === 'relighting') ? `<strong>STEP 1</strong><p>${document.getElementById('input-step1').value}</p><strong>STEP 2</strong><p>${document.getElementById('input-step2').value}</p>` : document.getElementById('input-prompt').value;
+            const newEntry = { title, thumbnail: newImages[0], images: newImages, prompt: promptHTML };
             if (tag === 'animation') {
-                toolsText = document.getElementById('input-tools').value;
-                durationText = document.getElementById('input-duration').value;
+                newEntry.tools = document.getElementById('input-tools').value;
+                newEntry.duration = document.getElementById('input-duration').value;
             }
-
-            const newEntry = {
-                title: title,
-                thumbnail: newImages[0], 
-                images: newImages,
-                prompt: promptHTML
-            };
-            if (toolsText) newEntry.tools = toolsText;
-            if (durationText) newEntry.duration = durationText;
-
-            if (!database[tag]) {
-                database[tag] = []; 
-            }
+            if (!database[tag]) database[tag] = [];
             database[tag].push(newEntry);
-
-            try {
-                // SAVES TO THE HIGH-CAPACITY INDEXED DB
-                await saveDatabase(); 
-                alert("Success! Your prompt has been added to the archive.");
-                document.getElementById('submit-form').reset();
-                goHome();
-            } catch (e) {
-                console.error(e);
-                alert("Error saving! The file might still be too large for your browser's local cache limits.");
-            }
+            await saveDatabase();
+            alert("Success!");
+            goHome();
         }
     </script>
 </body>
