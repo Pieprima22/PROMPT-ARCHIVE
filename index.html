@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Archive</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        .page {
+            display: none;
+            padding: 40px 80px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .active-page {
+            display: block;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 40px;
+            left: 80px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 10px 0;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+
+        .tag-header {
+            text-transform: uppercase;
+            font-weight: normal;
+            letter-spacing: 1px;
+            margin-bottom: 60px;
+            font-size: 18px;
+        }
+
+        /* --- Home Page --- */
+        #home-page {
+            display: none; /* Controlled by JS */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #home-page.active-page {
+            display: flex;
+        }
+
+        .title {
+            font-size: 24px;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        /* Search Container & Autocomplete */
+        .search-container {
+            position: relative;
+            width: 400px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            opacity: 0.6;
+            z-index: 2;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border-radius: 25px;
+            border: none;
+            background-color: #e0e0e0;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Suggestions Dropdown Styles */
+        .suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            margin-top: 8px;
+            overflow: hidden;
+            display: none; /* Hidden by default */
+            z-index: 10;
+        }
+
+        .suggestion-item {
+            padding: 12px 20px 12px 45px;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #333;
+            transition: background-color 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .hint {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* --- Results Page --- */
+        .results-grid {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .result-card {
+            width: 350px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .result-image-placeholder {
+            width: 100%;
+            height: 200px;
+            background-color: #f0f0f0;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+
+        .result-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        /* --- Detail Page --- */
+        .detail-layout {
+            display: flex;
+            gap: 80px;
+            margin-top: 40px;
+        }
+
+        .detail-column {
+            flex: 1;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .example-img {
+            width: 100%;
+            background-color: #f0f0f0;
+            margin-bottom: 20px;
+            object-fit: cover;
+        }
+
+        .prompt-text {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 50px; /* Space between prompt and extra info */
+        }
+        
+        .prompt-text p {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        /* --- Extra Info Styles for Tools & Duration --- */
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+        
+        .info-row .section-title {
+            width: 150px; /* Aligns the data values perfectly */
+            margin-bottom: 0; 
+        }
+
+        .info-value {
+            font-size: 16px;
+            text-transform: uppercase;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="home-page" class="page active-page">
+        <div class="title">PROMPT ARCHIVE</div>
+        <div class="search-container">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-input" class="search-bar" placeholder="SEARCH PROMPT (e.g., watercolor, relighting)" autocomplete="off">
+            
+            <div id="suggestions" class="suggestions-box"></div>
+        </div>
+        <div class="hint">Available tags: Watercolor, Relighting, Realistic, Animation</div>
+    </div>
+
+    <div id="results-page" class="page">
+        <div class="tag-header" id="results-header">TAG - WATERCOLOR</div>
+        <div class="results-grid" id="results-grid">
+            </div>
+        <button class="back-btn" onclick="goHome()">BACK</button>
+    </div>
+
+    <div id="detail-page" class="page">
+        <div class="tag-header" id="detail-header">TAG - WATERCOLOR</div>
+        
+        <div class="detail-layout">
+            <div class="detail-column">
+                <div class="section-title">EXAMPLE IMAGES</div>
+                <div id="detail-images">
+                    </div>
+            </div>
+            
+            <div class="detail-column">
+                <div class="section-title">PROMPT</div>
+                <div class="prompt-text" id="detail-prompt">
+                    </div>
+
+                <div id="detail-extra-info" style="display: none;">
+                    
+                    <div class="info-row" id="row-tools">
+                        <div class="section-title">TOOLS</div>
+                        <div class="info-value" id="detail-tools"></div>
+                    </div>
+                    
+                    <div class="info-row" id="row-duration">
+                        <div class="section-title">DURATION</div>
+                        <div class="info-value" id="detail-duration"></div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <button class="back-btn" onclick="goResults()">BACK</button>
+    </div>
+
+    <script>
+        // MOCK DATABASE - ALL ITEMS NOW HAVE THUMBNAILS
+       const database = {
+            "watercolor": [
+                {
+                    title: "DETAILED WATERCOLOR SKETCH",
+                    // UPDATE THIS THUMBNAIL PATH
+                    thumbnail: "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/WATERCOLOR/DETAILED WATERCLOR/D1.png",
+                    images: [
+                        "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/WATERCOLOR/DETAILED WATERCLOR/D1.png",
+                        "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/WATERCOLOR/DETAILED WATERCLOR/D2.png"
+                    ],
+                    prompt: "Transform this image to a detailed and sharp hand sketch. Low opacity watercolor. Keep the camera and everything aligned."
+                },
+                {
+                    title: "BLACK AND WHITE",
+                    // UPDATE THIS THUMBNAIL PATH
+                    thumbnail: "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/WATERCOLOR/BLACK&WHITE/BW1.png",
+                    images: [
+                        "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/WATERCOLOR/BLACK&WHITE/BW1.png",
+                        "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/WATERCOLOR/BLACK&WHITE/BW2.png",
+                    ],
+                    prompt: `
+                        <p>Transform the input image into a grayscale storyboard animatic frame with loose pencil/graphite sketch linework: thin, slightly imperfect strokes, subtle construction lines, light smudging, and minimal shading (simple value blocks only).</p>
+
+                        <p>Preserve the original composition exactly (same camera angle, framing, perspective, subject positions, proportions, and depth) — no redesign, no added objects, no removal. Simplify materials and textures into readable shapes; prioritize clear silhouettes and strong facial/gesture readability if characters exist.</p>
+
+                        <p>Backgrounds should be minimal and atmospheric, indicated with light contour lines and soft depth cues; add a few sparse dust/snow specks for texture. Output should feel like a scanned storyboard sheet: slightly soft, organic, and unfinished—not inked, not vector, not photoreal.</p>
+                    `
+                }
+            ],
+            "relighting": [
+                {
+                    title: "NIGHT TO DAY",
+                    // UPDATE THIS THUMBNAIL PATH
+                    thumbnail: "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/RELLIGHTING/NIGHTTODAY/NTD THUMNAIL.png",
+                    images: [
+                        "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/RELLIGHTING/NIGHTTODAY/N1.png",
+                        "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/RELLIGHTING/NIGHTTODAY/N1 SK.png",
+                        "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/RELLIGHTING/NIGHTTODAY/ND1.png"
+                    ],
+                    // NOTICE THE BACKTICKS (`) AT THE START AND END HERE
+                    prompt: `
+                        <strong>STEP 1 - TRANSFORM THE IMAGE TO SKETCH</strong>
+                        <p>Transform this image to a detailed and sharp hand sketch. Low opacity water color. Keep the camera and everything aligned.</p>
+
+                        <strong>STEP 2 - TRANSFORM SKETCH STYE TO RELISTIC</strong>
+                        <p>Transform this sketch into a hyper-realistic luxury Najdi building entrance in golden hour afternoon scene. Create warm, soft sunlight with rich amber tones illuminating, vegetation, and water fountain in the middle. Soft uplighting on plants, and warm landscape lighting (2700–3000K). Do not add additional vegetation in the image. The Najdi lanterns on the building facade with soft flame glow. Ensure all materials feel realistic: mud-dried earthen walls, white plastered columns and crenellations, natural stone mosaic flooring, natural wood grain, stone textures, and micro-shadow details. Mood: serene, relaxing, luxurious, high-end resort in golden hour afternoon. Keep the same exact camera, Perfect alignment.</p>
+                    `
+                }
+            ],
+            "realistic": [
+                {
+                    title: "MINIMALIST PHOTOREAL",
+                    // UPDATE THIS THUMBNAIL PATH
+                    thumbnail: "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/REALISTIC/MINIMALIST/THUMBNAIL_REAL.png",
+                    images: [
+                        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=600&q=80"
+                    ],
+                    prompt: "Render this minimalist Japanese-Scandinavian design in a hyper-realistic photographic style. High resolution, 8k, photorealistic textures, soft diffuse natural lighting."
+                }
+            ],
+            "animation": [
+                {
+                    title: "CINEMATIC DOLLY IN",
+                    // UPDATE THIS THUMBNAIL PATH
+                    thumbnail:  "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/ANIMATION/DOLLY IN/DOLLY1.gif",
+                    images: [
+                        "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/ANIMATION/DOLLY IN/DOLLY1.gif"
+                    ],
+                    prompt: "A slow and smooth camera glide forward from a semi-aerial perspective, moving through the center of a luxurious, multi-level outdoor retail plaza at the blue hour of sunset. The modern, curvilinear architecture is illuminated with warm, inviting interior lights. People are seen leisurely strolling along pristine walkways, chatting at outdoor cafes, and meandering between upscale boutiques. The camera captures the tranquil and sophisticated atmosphere, creating an overall mood of upscale elegance and peacefulness. Photorealistic, cinematic, 8K.",
+                    tools: "KLING VIDEO 2.5 TURBO",
+                    duration: "5 SECONDS"
+                },
+                {
+                    title: "CINEMATIC ORBIT",
+                    // UPDATE THIS THUMBNAIL PATH
+                      thumbnail:  "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/ANIMATION/ORBITS/ORBITS1.gif",
+                    images: [
+                        "file:///C:/Users/pon25/Desktop/SEARCH/IMAGE/ANIMATION/ORBITS/ORBITS1.gif",
+                    ],
+                    prompt: "Slow orbit shot with subtle people movement, gentle water ripples, soft palm wind, and warm shifting sunset light. Cinematic and ultra-realistic.",
+                    tools: "KLING VIDEO 2.5 TURBO",
+                    duration: "5 SECONDS"
+                }
+            ]
+        };
+
+        const availableTags = Object.keys(database);
+
+        // Elements
+        const searchInput = document.getElementById('search-input');
+        const suggestionsBox = document.getElementById('suggestions');
+        const homePage = document.getElementById('home-page');
+        const resultsPage = document.getElementById('results-page');
+        const detailPage = document.getElementById('detail-page');
+
+        // Listen for typing to show suggestions
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            suggestionsBox.innerHTML = ''; // Clear previous suggestions
+
+            if (query === '') {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            // Find matching tags in our database
+            const matches = availableTags.filter(tag => tag.includes(query));
+
+            if (matches.length > 0) {
+                matches.forEach(match => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerText = match;
+                    
+                    // What happens when you click a suggestion
+                    div.onclick = function() {
+                        searchInput.value = match;
+                        suggestionsBox.style.display = 'none';
+                        loadResults(match);
+                    };
+                    
+                    suggestionsBox.appendChild(div);
+                });
+                suggestionsBox.style.display = 'block';
+            } else {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        // Hide suggestions if you click somewhere else on the screen
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-container')) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        // Listen for "Enter" key on search bar
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.toLowerCase().trim();
+                
+                if (database[query]) {
+                    suggestionsBox.style.display = 'none';
+                    loadResults(query);
+                } else {
+                    alert('Tag not found! Try: watercolor, relighting, realistic, or animation');
+                }
+            }
+        });
+
+        function loadResults(tag) {
+            document.getElementById('results-header').innerText = "TAG - " + tag.toUpperCase();
+            const grid = document.getElementById('results-grid');
+            grid.innerHTML = "";
+
+            database[tag].forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.onclick = () => loadDetail(tag, index);
+
+                // Uses the specific thumbnail you defined for each item
+                const thumbImage = item.thumbnail ? item.thumbnail : item.images[0];
+
+                card.innerHTML = `
+                    <img src="${thumbImage}" class="result-image-placeholder" alt="${item.title}">
+                    <div class="result-title">${item.title}</div>
+                `;
+                grid.appendChild(card);
+            });
+
+            homePage.classList.remove('active-page');
+            detailPage.classList.remove('active-page');
+            resultsPage.classList.add('active-page');
+        }
+
+        function loadDetail(tag, itemIndex) {
+            const data = database[tag][itemIndex];
+            document.getElementById('detail-header').innerText = "TAG - " + tag.toUpperCase();
+            document.getElementById('detail-prompt').innerHTML = data.prompt;
+
+            /* --- TOOLS AND DURATION LOGIC --- */
+            const extraInfoBox = document.getElementById('detail-extra-info');
+            const rowTools = document.getElementById('row-tools');
+            const rowDuration = document.getElementById('row-duration');
+
+            if (data.tools || data.duration) {
+                extraInfoBox.style.display = 'block';
+
+                if (data.tools) {
+                    rowTools.style.display = 'flex';
+                    document.getElementById('detail-tools').innerText = data.tools;
+                } else {
+                    rowTools.style.display = 'none';
+                }
+
+                if (data.duration) {
+                    rowDuration.style.display = 'flex';
+                    document.getElementById('detail-duration').innerText = data.duration;
+                } else {
+                    rowDuration.style.display = 'none';
+                }
+            } else {
+                extraInfoBox.style.display = 'none';
+            }
+            /* -------------------------------- */
+
+            const imgContainer = document.getElementById('detail-images');
+            imgContainer.innerHTML = "";
+            data.images.forEach(imgSrc => {
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.className = 'example-img';
+                imgContainer.appendChild(img);
+            });
+
+            resultsPage.classList.remove('active-page');
+            detailPage.classList.add('active-page');
+        }
+
+        function goHome() {
+            searchInput.value = ''; // clear search
+            suggestionsBox.style.display = 'none'; // ensure suggestions hide
+            resultsPage.classList.remove('active-page');
+            detailPage.classList.remove('active-page');
+            homePage.classList.add('active-page');
+        }
+
+        function goResults() {
+            detailPage.classList.remove('active-page');
+            resultsPage.classList.add('active-page');
+        }
+    </script>
+</body>
+</html>
