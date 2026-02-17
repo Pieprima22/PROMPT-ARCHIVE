@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -164,7 +165,7 @@
             transition: transform 0.2s;
             display: flex;
             flex-direction: column;
-            align-items: center; 
+            align-items: center; /* Centers the title under the image */
         }
 
         .result-card:hover {
@@ -213,7 +214,7 @@
 
         .prompt-text {
             font-size: 15px;
-            line-height: 1.6;
+            line-height: 1.5;
             margin-bottom: 50px;
         }
         
@@ -270,9 +271,14 @@
             outline: none;
         }
 
+        select.form-input {
+            appearance: none;
+            cursor: pointer;
+        }
+
         textarea.form-input {
             resize: vertical;
-            min-height: 200px;
+            min-height: 150px;
             line-height: 1.5;
         }
 
@@ -382,7 +388,7 @@
 
             <div class="form-group" id="group-step2" style="display: none;">
                 <div class="form-label">STEP 2</div>
-                <textarea class="form-input" id="input-step2" placeholder="Enter instructions for Step 2..."></textarea>
+                <textarea class="form-input" id="input-step2" placeholder="Transform sketch style to projects..."></textarea>
             </div>
 
             <div class="form-group" id="group-tools" style="display: none;">
@@ -408,15 +414,17 @@
                     title: "DETAILED WATERCOLOR SKETCH",
                     thumbnail: "IMAGE/WATERCOLOR/DETAILED WATERCLOR/d thumb.png",
                     images: ["IMAGE/WATERCOLOR/DETAILED WATERCLOR/D1.png", "IMAGE/WATERCOLOR/DETAILED WATERCLOR/D2.png"],
-                    prompt: "<p>Transform this image to a detailed and sharp hand sketch. Low opacity watercolor. Keep the camera and everything aligned.</p>"
+                    prompt: "Transform this image to a detailed and sharp hand sketch. Low opacity watercolor. Keep the camera and everything aligned."
                 },
                 {
                     title: "BLACK AND WHITE",
                     thumbnail: "IMAGE/WATERCOLOR/BLACK&WHITE/BW thumb.png",
                     images: ["IMAGE/WATERCOLOR/BLACK&WHITE/BW1.png", "IMAGE/WATERCOLOR/BLACK&WHITE/BW2.png"],
-                    prompt: `<p>Transform the input image into a grayscale storyboard animatic frame with loose pencil/graphite sketch linework: thin, slightly imperfect strokes, subtle construction lines, light smudging, and minimal shading (simple value blocks only).</p>
-                             <p>Preserve the original composition exactly (same camera angle, framing, perspective, subject positions, proportions, and depth) — no redesign, no added objects, no removal. Simplify materials and textures into readable shapes; prioritize clear silhouettes and strong facial/gesture readability if characters exist.</p>
-                             <p>Backgrounds should be minimal and atmospheric, indicated with light contour lines and soft depth cues; add a few sparse dust/snow specks for texture. Output should feel like a scanned storyboard sheet: slightly soft, organic, and unfinished—not inked, not vector, not photoreal.</p>`
+                    prompt: `
+                        <p>Transform the input image into a grayscale storyboard animatic frame with loose pencil/graphite sketch linework: thin, slightly imperfect strokes, subtle construction lines, light smudging, and minimal shading (simple value blocks only).</p>
+                        <p>Preserve the original composition exactly (same camera angle, framing, perspective, subject positions, proportions, and depth) — no redesign, no added objects, no removal. Simplify materials and textures into readable shapes; prioritize clear silhouettes and strong facial/gesture readability if characters exist.</p>
+                        <p>Backgrounds should be minimal and atmospheric, indicated with light contour lines and soft depth cues; add a few sparse dust/snow specks for texture. Output should feel like a scanned storyboard sheet: slightly soft, organic, and unfinished—not inked, not vector, not photoreal.</p>
+                    `
                 }
             ],
             "relighting": [
@@ -424,29 +432,57 @@
                     title: "NIGHT TO DAY",
                     thumbnail: "IMAGE/RELLIGHTING/NIGHTTODAY/NTD THUMNAIL.png",
                     images: ["IMAGE/RELLIGHTING/NIGHTTODAY/N1.png", "IMAGE/RELLIGHTING/NIGHTTODAY/N1 SK.png", "IMAGE/RELLIGHTING/NIGHTTODAY/ND1.png"],
-                    prompt: `<strong>STEP 1 - TRANSFORM THE IMAGE TO SKETCH</strong>
-                             <p>Transform this image to a detailed and sharp hand sketch. Low opacity water color. Keep the camera and everything aligned.</p>
-                             <strong>STEP 2 - TRANSFORM SKETCH STYE TO RELISTIC</strong>
-                             <p>Transform this sketch into a hyper-realistic luxury Najdi building entrance in golden hour afternoon scene. Create warm, soft sunlight with rich amber tones illuminating, vegetation, and water fountain in the middle. Soft uplighting on plants, and warm landscape lighting (2700–3000K). Do not add additional vegetation in the image. The Najdi lanterns on the building facade with soft flame glow. Ensure all materials feel realistic: mud-dried earthen walls, white plastered columns and crenellations, natural stone mosaic flooring, natural wood grain, stone textures, and micro-shadow details. Mood: serene, relaxing, luxurious, high-end resort in golden hour afternoon. Keep the same exact camera, Perfect alignment.</p>`
+                    prompt: `
+                        <strong>STEP 1 - TRANSFORM THE IMAGE TO SKETCH</strong>
+                        <p>Transform this image to a detailed and sharp hand sketch. Low opacity water color. Keep the camera and everything aligned.</p>
+                        <strong>STEP 2 - TRANSFORM SKETCH STYE TO RELISTIC</strong>
+                        <p>Transform this sketch into a hyper-realistic luxury Najdi building entrance in golden hour afternoon scene. Create warm, soft sunlight with rich amber tones illuminating, vegetation, and water fountain in the middle. Soft uplighting on plants, and warm landscape lighting (2700–3000K). Do not add additional vegetation in the image. The Najdi lanterns on the building facade with soft flame glow. Ensure all materials feel realistic: mud-dried earthen walls, white plastered columns and crenellations, natural stone mosaic flooring, natural wood grain, stone textures, and micro-shadow details. Mood: serene, relaxing, luxurious, high-end resort in golden hour afternoon. Keep the same exact camera, Perfect alignment.</p>
+                    `
                 }
             ],
-            "projects": [
+           "projects": [
                 {
-                    title: "2026 Greeting Posts Papercraft",
+                    title: "2026 Greeting Posts Papercraft", // <--- Changed the title slightly
                     thumbnail: "IMAGE/PROJECTS/GREETING POST/G THUMB.png",
                     images: ["IMAGE/PROJECTS/GREETING POST/G1.png", "IMAGE/PROJECTS/GREETING POST/G2.png"],
-                    prompt: `<p>Create a photorealistic papercraft model of the provided building, rendered as a centered frontal elevation composed entirely from white paper with layered die-cut elements, delicate embossing, and precise, crisp edges. Maintain generous negative space and a clean high-key background.</p>
-                             <p>Illuminate the interior windows with warm amber light so the model appears to glow from within, and place subtle paper-cut contextual elements (for example palm silhouettes or building-appropriate foliage) at the sides. Emphasize layered depth—foreground entrance canopy, mid-level balconies, recessed windows—showing clear separation between planes and soft tactile paper texture.</p>
-                             <p>Use soft directional top/side lighting to create gentle natural shadows and a slight drop-shadow behind the structure; keep the composition symmetrical, slightly low-angle frontal, with shallow depth of field and high-resolution fine detail. Render with a calm, elegant, minimally whimsical atmosphere suitable for close-up inspection.</p>`
+                    prompt: `
+                        <p>Create a photorealistic papercraft model of the provided building, rendered as a centered frontal elevation composed entirely from white paper with layered die-cut elements, delicate embossing, and precise, crisp edges. Maintain generous negative space and a clean high-key background.</p>
+                        
+                        <p>Illuminate the interior windows with warm amber light so the model appears to glow from within, and place subtle paper-cut contextual elements (for example palm silhouettes or building-appropriate foliage) at the sides. Emphasize layered depth—foreground entrance canopy, mid-level balconies, recessed windows—showing clear separation between planes and soft tactile paper texture.</p>
+                        
+                        <p>Use soft directional top/side lighting to create gentle natural shadows and a slight drop-shadow behind the structure; keep the composition symmetrical, slightly low-angle frontal, with shallow depth of field and high-resolution fine detail. Render with a calm, elegant, minimally whimsical atmosphere suitable for close-up inspection.</p>
+                    `
                 }
             ],
-            "animation": [
+           "animation": [
                 {
                     title: "CINEMATIC DOLLY IN",
                     thumbnail: "IMAGE/ANIMATION/DOLLY IN/DOLLY1.gif",
-                    images: ["IMAGE/ANIMATION/DOLLY IN/DOLLY1.gif"],
-                    prompt: "<p>A slow and smooth camera glide forward from a semi-aerial perspective, moving through the center of a luxurious, multi-level outdoor retail plaza at the blue hour of sunset. The modern, curvilinear architecture is illuminated with warm, inviting interior lights. People are seen leisurely strolling along pristine walkways, chatting at outdoor cafes, and meandering between upscale boutiques. The camera captures the tranquil and sophisticated atmosphere, creating an overall mood of upscale elegance and peacefulness. Photorealistic, cinematic, 8K.</p>",
+                    images: [
+                        "IMAGE/ANIMATION/DOLLY IN/DOLLY1.gif",
+                    ],
+                    prompt: "A slow and smooth camera glide forward from a semi-aerial perspective, moving through the center of a luxurious, multi-level outdoor retail plaza at the blue hour of sunset. The modern, curvilinear architecture is illuminated with warm, inviting interior lights. People are seen leisurely strolling along pristine walkways, chatting at outdoor cafes, and meandering between upscale boutiques. The camera captures the tranquil and sophisticated atmosphere, creating an overall mood of upscale elegance and peacefulness. Photorealistic, cinematic, 8K.",
                     tools: "KLING VIDEO 2.5 TURBO",
+                    duration: "5 SECONDS"
+                },
+                {
+                    title: "CINEMATIC ORBIT",
+                    thumbnail: "IMAGE/ANIMATION/ORBITS/ORBITS1.gif",
+                    images: [
+                        "IMAGE/ANIMATION/ORBITS/ORBITS1.gif",
+                    ],
+                    prompt: "Slow orbit shot with subtle people movement, gentle water ripples, soft palm wind, and warm shifting sunset light. Cinematic and ultra-realistic.",
+                    tools: "KLING VIDEO 2.5 TURBO",
+                    duration: "5 SECONDS"
+                },
+                {
+                    title: "CHANGING TIME OF THE DAY",
+                    thumbnail: "IMAGE/ANIMATION/TIME/TIME.gif",
+                    images: [
+                        "IMAGE/ANIMATION/TIME/TIME.gif",
+                    ],
+                    prompt: "Cinematic Camera slowly dolly forward, trees and water move gently. Fire bowls flicker. The sky transitions smoothly into deeper sunset some blue tones",
+                    tools: "SEEDANCE V1.0",
                     duration: "5 SECONDS"
                 }
             ]
@@ -492,35 +528,45 @@
             });
         }
 
-        // FIXED AUTO-SYNC: Updates code changes automatically on refresh
+        // AUTO-SYNC LOGIC: Merges code changes with browser memory automatically
+  // AUTO-SYNC LOGIC: Forces browser memory to update whenever you change the code
         window.onload = async function() {
             try {
                 await initIndexedDB();
                 let storedData = await loadDatabase();
                 
                 if (!storedData) {
+                    // First time load: use code as truth
                     database = JSON.parse(JSON.stringify(defaultDatabase));
                 } else {
                     database = storedData;
+                    
+                    // Loop through every tag in your hardcoded defaultDatabase
                     for (let tag in defaultDatabase) {
                         if (!database[tag]) {
+                            // If a whole new tag was added to code, add it to memory
                             database[tag] = defaultDatabase[tag];
                         } else {
                             defaultDatabase[tag].forEach(codeItem => {
+                                // Find if this specific title already exists in memory
                                 const existingIndex = database[tag].findIndex(memItem => memItem.title === codeItem.title);
+                                
                                 if (existingIndex === -1) {
+                                    // 1. NEW ITEM: If title isn't in memory, add it
                                     database[tag].push(codeItem);
                                 } else {
-                                    // Overwrite the prompt/data if title matches
+                                    // 2. EXISTING ITEM: Overwrite memory with the latest code 
+                                    // This updates prompts, images, and paths automatically!
                                     database[tag][existingIndex] = codeItem;
                                 }
                             });
                         }
                     }
                 }
+                // Save the synchronized data back to the browser memory
                 await saveDatabase();
             } catch (err) {
-                console.error("Storage error:", err);
+                console.error("Storage synchronization error:", err);
                 database = defaultDatabase;
             }
         };
@@ -529,6 +575,7 @@
         let currentViewedTag = "";
         let currentViewedIndex = -1;
 
+        // --- UI Logic (Search, Navigation, Submit) ---
         const searchInput = document.getElementById('search-input');
         const suggestionsBox = document.getElementById('suggestions');
         const homePage = document.getElementById('home-page');
@@ -617,16 +664,26 @@
             const pass = prompt("Enter Password:");
             if (pass === "admin") {
                 if(confirm("Permanently delete?")) {
+                    // 1. Remove the item from the array
                     database[currentViewedTag].splice(currentViewedIndex, 1);
+                    
+                    // 2. Save the updated database to browser memory
                     await saveDatabase();
+                    
                     alert("Deleted!");
+                    
+                    // 3. SHIFT LOGIC: Check if the tag still has items
                     if (database[currentViewedTag].length > 0) {
+                        // Re-load the results grid so the next item moves into the old spot
                         loadResults(currentViewedTag);
                     } else {
+                        // If no items left, go back to the home page
                         goHome();
                     }
                 }
-            } else { alert("Wrong password"); }
+            } else { 
+                alert("Wrong password"); 
+            }
         }
 
         function toggleFormFields() {
@@ -638,21 +695,11 @@
             document.getElementById('group-duration').style.display = (tag === 'animation') ? 'flex' : 'none';
         }
 
-        // NEW: Formatter for multi-paragraph input
-        function formatInputToHTML(text) {
-            // Trim whitespace, split by double-enters into paragraphs
-            return text.trim().split(/\n\n+/).map(para => {
-                // Convert single enters into line breaks <br>, then wrap in <p>
-                return `<p>${para.replace(/\n/g, '<br>')}</p>`;
-            }).join('');
-        }
-
         async function handleFormSubmit(event) {
             event.preventDefault();
             const tag = document.getElementById('input-tag').value;
             const title = document.getElementById('input-title').value;
             const files = document.getElementById('input-image').files;
-            
             let newImages = [];
             for (let file of files) {
                 const dataUrl = await new Promise(resolve => {
@@ -662,22 +709,12 @@
                 });
                 newImages.push(dataUrl);
             }
-
-            let promptHTML = "";
-            if (tag === 'relighting') {
-                const s1 = document.getElementById('input-step1').value;
-                const s2 = document.getElementById('input-step2').value;
-                promptHTML = `<strong>STEP 1</strong>${formatInputToHTML(s1)}<strong>STEP 2</strong>${formatInputToHTML(s2)}`;
-            } else {
-                promptHTML = formatInputToHTML(document.getElementById('input-prompt').value);
-            }
-
+            let promptHTML = (tag === 'relighting') ? `<strong>STEP 1</strong><p>${document.getElementById('input-step1').value}</p><strong>STEP 2</strong><p>${document.getElementById('input-step2').value}</p>` : document.getElementById('input-prompt').value;
             const newEntry = { title, thumbnail: newImages[0], images: newImages, prompt: promptHTML };
             if (tag === 'animation') {
                 newEntry.tools = document.getElementById('input-tools').value;
                 newEntry.duration = document.getElementById('input-duration').value;
             }
-
             if (!database[tag]) database[tag] = [];
             database[tag].push(newEntry);
             await saveDatabase();
