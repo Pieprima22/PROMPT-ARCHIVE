@@ -27,7 +27,7 @@
 
         .back-btn {
             position: fixed;
-            bottom: 40px;
+            bottom: 10px;
             left: 80px;
             background: none;
             border: none;
@@ -45,7 +45,7 @@
             text-transform: uppercase;
             font-weight: normal;
             letter-spacing: 1px;
-            margin-bottom: 60px;
+            margin-bottom: 30px;
             font-size: 18px;
         }
 
@@ -71,8 +71,8 @@
 
         .top-submit-btn {
             position: absolute;
-            top: 0;
-            right: 0;
+            top: 20px;
+            right: 20px;
             background-color: #e0e0e0;
             border: none;
             padding: 10px 25px;
@@ -186,7 +186,7 @@
         .detail-layout {
             display: flex;
             gap: 80px;
-            margin-top: 40px;
+            margin-top: 0px;
         }
 
         .detail-column {
@@ -200,9 +200,9 @@
         }
 
         .example-img {
-            width: 100%;
+            width: 75%;
             background-color: #f0f0f0;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             object-fit: cover;
         }
 
@@ -721,19 +721,39 @@
             submitPage.classList.remove('active-page');
         }
 
-        // --- UPDATED ASYNC DELETE FUNCTION ---
+    // --- PASSWORD PROTECTED DELETE FUNCTION ---
         async function deletePrompt() {
-            if(confirm("Are you sure you want to delete this prompt?")) {
-                database[currentViewedTag].splice(currentViewedIndex, 1);
+            // Ask for the password
+            const enteredPassword = prompt("Enter Admin Password to delete this prompt:");
+            
+            // Define your secret password right here!
+            const secretPassword = "admin";
+
+            // If they hit "Cancel" on the prompt box, do nothing
+            if (enteredPassword === null) {
+                return; 
+            }
+
+            // Check if the password matches
+            if (enteredPassword === secretPassword) {
                 
-                await saveDatabase(); // Now securely saves the deletion to IndexedDB!
-                
-                alert("Prompt deleted!");
-                if (database[currentViewedTag] && database[currentViewedTag].length > 0) {
-                    goResults(); 
-                } else {
-                    goHome();
+                if(confirm("Password accepted! Are you sure you want to delete this?")) {
+                    // Remove from database
+                    database[currentViewedTag].splice(currentViewedIndex, 1);
+                    
+                    // Save the change
+                    await saveDatabase(); 
+                    
+                    alert("Prompt deleted!");
+                    if (database[currentViewedTag] && database[currentViewedTag].length > 0) {
+                        goResults(); 
+                    } else {
+                        goHome();
+                    }
                 }
+            } else {
+                // If they type the wrong password
+                alert("Incorrect password. Deletion canceled.");
             }
         }
 
