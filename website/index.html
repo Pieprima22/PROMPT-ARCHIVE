@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Archive - Realtime</title>
+    <style>
+        /* Global Styles */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #ffffff; color: #000000; }
+        .page { display: none; padding: 40px 80px; min-height: 100vh; box-sizing: border-box; }
+        .active-page { display: block; }
+        .back-btn { position: fixed; bottom: 10px; left: 80px; background: none; border: none; font-size: 16px; cursor: pointer; font-weight: bold; padding: 10px 0; }
+        .back-btn:hover { text-decoration: underline; }
+        .tag-header { text-transform: uppercase; font-weight: normal; letter-spacing: 1px; margin-bottom: 30px; font-size: 18px; }
+
+        /* --- Home Page --- */
+        #home-page { display: none; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        #home-page.active-page { display: flex; }
+        .title { font-size: 24px; letter-spacing: 2px; margin-bottom: 20px; font-weight: 500; }
+        .top-submit-btn { position: absolute; top: 20px; right: 20px; background-color: #e0e0e0; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: background-color 0.2s; }
+        .top-submit-btn:hover { background-color: #d0d0d0; }
+
+        /* Search Container */
+        .search-container { position: relative; width: 400px; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; opacity: 0.6; z-index: 2; }
+        .search-bar { width: 100%; padding: 12px 15px 12px 45px; border-radius: 25px; border: none; background-color: #e0e0e0; font-size: 14px; box-sizing: border-box; outline: none; position: relative; z-index: 2; }
+        .suggestions-box { position: absolute; top: 100%; left: 0; width: 100%; background-color: #ffffff; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); margin-top: 8px; overflow: hidden; display: none; z-index: 10; }
+        .suggestion-item { padding: 12px 20px 12px 45px; cursor: pointer; font-size: 14px; text-transform: uppercase; color: #333; transition: background-color 0.2s; }
+        .suggestion-item:hover { background-color: #f0f0f0; }
+        .hint { margin-top: 15px; font-size: 12px; color: #666; }
+
+        /* --- Results Page --- */
+        .results-grid { display: flex; gap: 40px; flex-wrap: wrap; justify-content: left; }
+        .result-card { width: 350px; cursor: pointer; transition: transform 0.2s; display: flex; flex-direction: column; align-items: center; }
+        .result-card:hover { transform: translateY(-5px); }
+        .result-image-placeholder { width: 100%; height: 200px; background-color: #f0f0f0; object-fit: cover; margin-bottom: 15px; }
+        .result-title { text-align: center; font-weight: bold; font-size: 14px; text-transform: uppercase; }
+
+        /* --- Detail Page --- */
+        .detail-layout { display: flex; gap: 80px; margin-top: 0px; align-items: flex-start; }
+        .detail-column { flex: 1; }
+        .section-title { font-weight: bold; margin-bottom: 20px; font-size: 16px; }
+        .example-img { width: 75%; background-color: #f0f0f0; margin-bottom: 10px; object-fit: cover; }
+        .prompt-text { font-size: 15px; line-height: 1.5; margin-bottom: 50px; }
+        .prompt-text p { margin-top: 0; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: flex-start; margin-bottom: 25px; }
+        .info-row .section-title { width: 150px; margin-bottom: 0; }
+        .info-value { font-size: 16px; text-transform: uppercase; color: #333; }
+
+        /* --- Submit Page --- */
+        .form-container { max-width: 800px; margin-top: 20px; }
+        .form-group { display: flex; align-items: flex-start; margin-bottom: 30px; }
+        .form-label { width: 150px; font-size: 16px; text-transform: uppercase; font-weight: normal; margin-top: 15px; }
+        .form-input { flex: 1; background-color: #e0e0e0; border: none; border-radius: 15px; padding: 15px 20px; font-size: 16px; font-family: inherit; outline: none; }
+        select.form-input { appearance: none; cursor: pointer; }
+        textarea.form-input { resize: vertical; min-height: 150px; line-height: 1.5; }
+        .form-submit-btn { background-color: #e0e0e0; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; margin-left: 150px; transition: background-color 0.2s; }
+        .form-submit-btn:hover { background-color: #d0d0d0; }
+        .form-submit-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        /* Loading Overlay */
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 1000; justify-content: center; align-items: center; font-size: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">UPLOADING TO CLOUD...</div>
+
+    <div id="home-page" class="page active-page">
+        <button class="top-submit-btn" onclick="goToSubmit()">SUBMIT</button>
+        <div class="title">PROMPT ARCHIVE</div>
+        <div class="search-container">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-input" class="search-bar" placeholder="SEARCH PROMPT (e.g., watercolor, relighting)" autocomplete="off">
+            <div id="suggestions" class="suggestions-box"></div>
+        </div>
+        <div class="hint">Available tags: watercolor, relighting, projects, animation</div>
+    </div>
+
+    <div id="results-page" class="page">
+        <div class="tag-header" id="results-header">TAG - WATERCOLOR</div>
+        <div class="results-grid" id="results-grid"></div>
+        <button class="back-btn" onclick="goHome()">BACK</button>
+    </div>
+
+    <div id="detail-page" class="page">
+        <div class="tag-header" id="detail-header">TAG - WATERCOLOR</div>
+        <div class="detail-layout">
+            <div class="detail-column">
+                <div class="section-title">EXAMPLE IMAGES</div>
+                <div id="detail-images"></div>
+            </div>
+            <div class="detail-column">
+                <div class="section-title">PROMPT</div>
+                <div class="prompt-text" id="detail-prompt"></div>
+                <div id="detail-extra-info" style="display: none;">
+                    <div class="info-row" id="row-tools">
+                        <div class="section-title">TOOLS</div>
+                        <div class="info-value" id="detail-tools"></div>
+                    </div>
+                    <div class="info-row" id="row-duration">
+                        <div class="section-title">DURATION</div>
+                        <div class="info-value" id="detail-duration"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="back-btn" onclick="goResults()">BACK</button>
+        <button class="back-btn" style="left: 160px; color: red; display: none;" onclick="deletePrompt()">DELETE (ADMIN)</button>
+    </div>
+
+    <div id="submit-page" class="page">
+        <div class="tag-header">SUBMIT YOUR PROMPT</div>
+        <form class="form-container" id="submit-form" onsubmit="handleFormSubmit(event)">
+            <div class="form-group">
+                <div class="form-label">TAG</div>
+                <select class="form-input" id="input-tag" onchange="toggleFormFields()">
+                    <option value="watercolor">Watercolor</option>
+                    <option value="relighting">Relighting</option>
+                    <option value="projects">Projects</option>
+                    <option value="animation">Animation</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <div class="form-label">TITLE</div>
+                <input type="text" class="form-input" id="input-title" required>
+            </div>
+            <div class="form-group">
+                <div class="form-label">IMAGE</div>
+                <input type="file" class="form-input" id="input-image" accept="image/*, .gif, video/mp4" multiple required>
+            </div>
+            <div class="form-group" id="group-prompt">
+                <div class="form-label">PROMPT</div>
+                <textarea class="form-input" id="input-prompt" placeholder="Enter your full prompt here..."></textarea>
+            </div>
+            <div class="form-group" id="group-step1" style="display: none;">
+                <div class="form-label">STEP 1</div>
+                <textarea class="form-input" id="input-step1" placeholder="Transform the image to sketch..."></textarea>
+            </div>
+            <div class="form-group" id="group-step2" style="display: none;">
+                <div class="form-label">STEP 2</div>
+                <textarea class="form-input" id="input-step2" placeholder="Transform sketch style to projects..."></textarea>
+            </div>
+            <div class="form-group" id="group-tools" style="display: none;">
+                <div class="form-label">TOOLS</div>
+                <input type="text" class="form-input" id="input-tools" placeholder="e.g. KLING VIDEO 2.5 TURBO">
+            </div>
+            <div class="form-group" id="group-duration" style="display: none;">
+                <div class="form-label">DURATION</div>
+                <input type="text" class="form-input" id="input-duration" placeholder="e.g. 5 SECONDS">
+            </div>
+            <button type="submit" class="form-submit-btn">SUBMIT</button>
+        </form>
+        <button class="back-btn" onclick="goHome()">BACK</button>
+    </div>
+
+    <script type="module">
+        // --- 1. FIREBASE IMPORTS ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        // --- 2. YOUR EXACT CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQjsmi5equgjEY-8qP3ubtNQEp9j8YT9M",
+            authDomain: "prompt-archive-e7055.firebaseapp.com",
+            projectId: "prompt-archive-e7055",
+            storageBucket: "prompt-archive-e7055.firebasestorage.app",
+            messagingSenderId: "962038901250",
+            appId: "1:962038901250:web:a1fa50ee49bbaff768951b",
+            measurementId: "G-RQCQ0GMPMW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+         // 2. RESTORED LOCAL DATABASE
+    const defaultDatabase = {
+            "watercolor": [
+                {
+                    title: "DETAILED WATERCOLOR SKETCH",
+                    thumbnail: "IMAGE/WATERCOLOR/DETAILED WATERCLOR/d thumb.png",
+                    images: ["IMAGE/WATERCOLOR/DETAILED WATERCLOR/D1.png", "IMAGE/WATERCOLOR/DETAILED WATERCLOR/D2.png"],
+                    prompt: "<p>Transform this image to a detailed and sharp hand sketch. Low opacity watercolor. Keep the camera and everything aligned.</p>"
+                },
+                {
+                    title: "BLACK AND WHITE",
+                    thumbnail: "IMAGE/WATERCOLOR/BLACK&WHITE/BW thumb.png",
+                    images: ["IMAGE/WATERCOLOR/BLACK&WHITE/BW1.png", "IMAGE/WATERCOLOR/BLACK&WHITE/BW2.png"],
+                    prompt: `<p>Transform the input image into a grayscale storyboard animatic frame with loose pencil/graphite sketch linework: thin, slightly imperfect strokes, subtle construction lines, light smudging, and minimal shading (simple value blocks only).</p>
+                             <p>Preserve the original composition exactly (same camera angle, framing, perspective, subject positions, proportions, and depth) — no redesign, no added objects, no removal. Simplify materials and textures into readable shapes; prioritize clear silhouettes and strong facial/gesture readability if characters exist.</p>
+                             <p>Backgrounds should be minimal and atmospheric, indicated with light contour lines and soft depth cues; add a few sparse dust/snow specks for texture. Output should feel like a scanned storyboard sheet: slightly soft, organic, and unfinished—not inked, not vector, not photoreal.</p>`
+                }
+            ],
+            "relighting": [
+                {
+                    title: "NIGHT TO DAY",
+                    thumbnail: "IMAGE/RELLIGHTING/NIGHTTODAY/NTD THUMNAIL.png",
+                    images: ["IMAGE/RELLIGHTING/NIGHTTODAY/N1.png", "IMAGE/RELLIGHTING/NIGHTTODAY/N1 SK.png", "IMAGE/RELLIGHTING/NIGHTTODAY/ND1.png"],
+                    prompt: `<strong>STEP 1 - TRANSFORM THE IMAGE TO SKETCH</strong>
+                             <p>Transform this image to a detailed and sharp hand sketch. Low opacity water color. Keep the camera and everything aligned.</p>
+                             <strong>STEP 2 - TRANSFORM SKETCH STYE TO RELISTIC</strong>
+                             <p>Transform this sketch into a hyper-realistic luxury Najdi building entrance in golden hour afternoon scene. Create warm, soft sunlight with rich amber tones illuminating, vegetation, and water fountain in the middle. Soft uplighting on plants, and warm landscape lighting (2700–3000K). Do not add additional vegetation in the image. The Najdi lanterns on the building facade with soft flame glow. Ensure all materials feel realistic: mud-dried earthen walls, white plastered columns and crenellations, natural stone mosaic flooring, natural wood grain, stone textures, and micro-shadow details. Mood: serene, relaxing, luxurious, high-end resort in golden hour afternoon. Keep the same exact camera, Perfect alignment.</p>`
+                }
+            ],
+            "projects": [
+                {
+                    title: "2026 Greeting Posts Papercraft",
+                    thumbnail: "IMAGE/PROJECTS/GREETING POST/G THUMB.png",
+                    images: ["IMAGE/PROJECTS/GREETING POST/G1.png", "IMAGE/PROJECTS/GREETING POST/G2.png"],
+                    prompt: `<p>Create a photorealistic papercraft model of the provided building, rendered as a centered frontal elevation composed entirely from white paper with layered die-cut elements, delicate embossing, and precise, crisp edges. Maintain generous negative space and a clean high-key background.</p>
+                             <p>Illuminate the interior windows with warm amber light so the model appears to glow from within, and place subtle paper-cut contextual elements (for example palm silhouettes or building-appropriate foliage) at the sides. Emphasize layered depth—foreground entrance canopy, mid-level balconies, recessed windows—showing clear separation between planes and soft tactile paper texture.</p>
+                             <p>Use soft directional top/side lighting to create gentle natural shadows and a slight drop-shadow behind the structure; keep the composition symmetrical, slightly low-angle frontal, with shallow depth of field and high-resolution fine detail. Render with a calm, elegant, minimally whimsical atmosphere suitable for close-up inspection.</p>`
+                }
+            ],
+            "animation": [
+                {
+                    title: "CINEMATIC DOLLY IN",
+                    thumbnail: "IMAGE/ANIMATION/DOLLY IN/DOLLY1.gif",
+                    images: ["IMAGE/ANIMATION/DOLLY IN/DOLLY1.gif"],
+                    prompt: "<p>A slow and smooth camera glide forward from a semi-aerial perspective, moving through the center of a luxurious, multi-level outdoor retail plaza at the blue hour of sunset. The modern, curvilinear architecture is illuminated with warm, inviting interior lights. People are seen leisurely strolling along pristine walkways, chatting at outdoor cafes, and meandering between upscale boutiques. The camera captures the tranquil and sophisticated atmosphere, creating an overall mood of upscale elegance and peacefulness. Photorealistic, cinematic, 8K.</p>",
+                    tools: "KLING VIDEO 2.5 TURBO",
+                    duration: "5 SECONDS"
+                }
+            ]
+        };
+
+        // --- 4. REALTIME SYNC LOGIC ---
+        let database = JSON.parse(JSON.stringify(defaultDatabase));
+        const availableTags = Object.keys(defaultDatabase);
+        let currentViewedTag = "";
+        let currentViewedIndex = -1;
+
+        // Listen for Cloud Updates
+        const q = query(collection(db, "prompts"), orderBy("timestamp", "desc"));
+        onSnapshot(q, (snapshot) => {
+            // 1. Reset to default (so we don't duplicate items)
+            database = JSON.parse(JSON.stringify(defaultDatabase));
+
+            // 2. Add Cloud Items on top
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const entry = { ...data, id: doc.id, isCloud: true }; 
+                
+                if (database[entry.tag]) {
+                    database[entry.tag].unshift(entry);
+                } else {
+                    database[entry.tag] = [entry];
+                    if(!availableTags.includes(entry.tag)) availableTags.push(entry.tag);
+                }
+            });
+
+            // 3. Refresh View if user is looking at a page
+            if (document.getElementById('results-page').classList.contains('active-page') && currentViewedTag) {
+                window.loadResults(currentViewedTag);
+            }
+        });
+
+
+        // --- 5. UI FUNCTIONS ---
+        window.goToSubmit = function() { hideAllPages(); document.getElementById('submit-page').classList.add('active-page'); window.toggleFormFields(); }
+        window.goHome = function() { hideAllPages(); document.getElementById('home-page').classList.add('active-page'); }
+        window.goResults = function() { hideAllPages(); document.getElementById('results-page').classList.add('active-page'); }
+        
+        function hideAllPages() { 
+            [document.getElementById('home-page'), document.getElementById('results-page'), 
+             document.getElementById('detail-page'), document.getElementById('submit-page')].forEach(p => p.classList.remove('active-page')); 
+        }
+
+        window.loadResults = function(tag) {
+            currentViewedTag = tag;
+            document.getElementById('results-header').innerText = "TAG - " + tag.toUpperCase();
+            const grid = document.getElementById('results-grid');
+            grid.innerHTML = "";
+            
+            if(database[tag]) {
+                database[tag].forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'result-card';
+                    card.onclick = () => window.loadDetail(tag, index);
+                    // Handle both Default (local path) and Cloud (URL) images
+                    const thumbSrc = item.thumbnail || item.images[0];
+                    card.innerHTML = `<img src="${thumbSrc}" class="result-image-placeholder"><div class="result-title">${item.title}</div>`;
+                    grid.appendChild(card);
+                });
+            }
+            hideAllPages();
+            document.getElementById('results-page').classList.add('active-page');
+        }
+
+        window.loadDetail = function(tag, itemIndex) {
+            currentViewedIndex = itemIndex;
+            const data = database[tag][itemIndex];
+            
+            document.getElementById('detail-header').innerText = "TAG - " + tag.toUpperCase();
+            document.getElementById('detail-prompt').innerHTML = data.prompt;
+            
+            const extra = document.getElementById('detail-extra-info');
+            if (data.tools || data.duration) {
+                extra.style.display = 'block';
+                document.getElementById('detail-tools').innerText = data.tools || "";
+                document.getElementById('detail-duration').innerText = data.duration || "";
+            } else { extra.style.display = 'none'; }
+            
+            const imgContainer = document.getElementById('detail-images');
+            imgContainer.innerHTML = "";
+            data.images.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = 'example-img';
+                imgContainer.appendChild(img);
+            });
+            
+            // Show Delete Button ONLY for Cloud items
+            const deleteBtn = document.querySelector('.back-btn[style*="color: red"]');
+            if(data.isCloud) {
+                deleteBtn.style.display = 'block';
+            } else {
+                deleteBtn.style.display = 'none'; 
+            }
+
+            hideAllPages();
+            document.getElementById('detail-page').classList.add('active-page');
+        }
+
+        window.toggleFormFields = function() {
+            const tag = document.getElementById('input-tag').value;
+            document.getElementById('group-prompt').style.display = (tag === 'relighting') ? 'none' : 'flex';
+            document.getElementById('group-step1').style.display = (tag === 'relighting') ? 'flex' : 'none';
+            document.getElementById('group-step2').style.display = (tag === 'relighting') ? 'flex' : 'none';
+            document.getElementById('group-tools').style.display = (tag === 'animation') ? 'flex' : 'none';
+            document.getElementById('group-duration').style.display = (tag === 'animation') ? 'flex' : 'none';
+        }
+
+        // --- 6. SUBMIT LOGIC (Uploads to Cloud) ---
+        window.handleFormSubmit = async function(event) {
+            event.preventDefault();
+            
+            const btn = document.querySelector('.form-submit-btn');
+            const overlay = document.getElementById('loading-overlay');
+            const originalText = btn.innerText;
+            
+            // Show loading state
+            btn.innerText = "UPLOADING...";
+            btn.disabled = true;
+            overlay.style.display = 'flex';
+
+            try {
+                const tag = document.getElementById('input-tag').value;
+                const title = document.getElementById('input-title').value;
+                const files = document.getElementById('input-image').files;
+
+                // 1. Upload Images to Firebase Storage
+                let imageUrls = [];
+                for (let file of files) {
+                    const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
+                    const snapshot = await uploadBytes(storageRef, file);
+                    const downloadURL = await getDownloadURL(snapshot.ref);
+                    imageUrls.push(downloadURL);
+                }
+
+                // 2. Prepare Data
+                let promptHTML = (tag === 'relighting') 
+                    ? `<strong>STEP 1</strong><p>${document.getElementById('input-step1').value}</p><strong>STEP 2</strong><p>${document.getElementById('input-step2').value}</p>` 
+                    : document.getElementById('input-prompt').value;
+
+                const newEntry = {
+                    tag: tag,
+                    title: title,
+                    images: imageUrls,
+                    thumbnail: imageUrls[0], 
+                    prompt: promptHTML,
+                    timestamp: Date.now()
+                };
+
+                if (tag === 'animation') {
+                    newEntry.tools = document.getElementById('input-tools').value;
+                    newEntry.duration = document.getElementById('input-duration').value;
+                }
+
+                // 3. Save to Firestore
+                await addDoc(collection(db, "prompts"), newEntry);
+
+                alert("Submitted successfully!");
+                document.getElementById('submit-form').reset();
+                window.goHome();
+
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                alert("Error submitting: " + error.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                overlay.style.display = 'none';
+            }
+        }
+
+        // --- 7. DELETE LOGIC ---
+        window.deletePrompt = async function() {
+            const item = database[currentViewedTag][currentViewedIndex];
+            
+            if (!item.isCloud) {
+                alert("You cannot delete default items.");
+                return;
+            }
+
+            const pass = prompt("Enter Password:");
+            if (pass === "admin") {
+                if(confirm("Permanently delete from Cloud?")) {
+                    try {
+                        await deleteDoc(doc(db, "prompts", item.id));
+                        alert("Deleted!");
+                        window.goHome();
+                    } catch (err) {
+                        alert("Error deleting: " + err.message);
+                    }
+                }
+            } else { 
+                alert("Wrong password"); 
+            }
+        }
+
+        // --- 8. SEARCH LOGIC ---
+        const searchInput = document.getElementById('search-input');
+        const suggestionsBox = document.getElementById('suggestions');
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            suggestionsBox.innerHTML = ''; 
+            if (query === '') { suggestionsBox.style.display = 'none'; return; }
+            const matches = availableTags.filter(tag => tag.includes(query));
+            if (matches.length > 0) {
+                matches.forEach(match => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerText = match;
+                    div.onclick = function() {
+                        searchInput.value = match;
+                        suggestionsBox.style.display = 'none';
+                        window.loadResults(match);
+                    };
+                    suggestionsBox.appendChild(div);
+                });
+                suggestionsBox.style.display = 'block';
+            } else { suggestionsBox.style.display = 'none'; }
+        });
+
+        document.addEventListener('click', (e) => { if (!e.target.closest('.search-container')) suggestionsBox.style.display = 'none'; });
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.toLowerCase().trim();
+                if (database[query]) { suggestionsBox.style.display = 'none'; window.loadResults(query); }
+                else { alert('Tag not found!'); }
+            }
+        });
+
+    </script>
+</body>
+</html>
